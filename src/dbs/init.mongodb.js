@@ -1,8 +1,8 @@
 'use strict'
 
 const mongoose = require('mongoose');
-
-const connecString = `mongodb://127.0.0.1:27017/Musical`;
+const { db: { host, name, port } } = require('../configs/config.mongodb');
+const connecString = `mongodb://${host}:${port}/${name}`;
 const { countConnect, checkOverload } = require('../helpers/check.connect');
 
 
@@ -18,7 +18,7 @@ class Database {
             mongoose.set('debug', { color: true })
         }
 
-        mongoose.connect(connecString, { maxPoolSize: 49 }).then(_ => console.log(`Connected Mongodb Success PRO`, checkOverload()))
+        mongoose.connect(connecString, { maxPoolSize: 49 }).then(_ => console.log(`Connected Mongodb ${name} Success version PRO`, checkOverload()))
             .catch(err => console.log(`Error Connect`))
     }
 
