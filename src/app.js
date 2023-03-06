@@ -12,13 +12,7 @@ app.use(compression());
 // init db
 require("./dbs/init.mongodb");
 // init router
-app.get("/", (req, res, next)=>{
-    const strCompress = "Temple data";
-    return res.status(200).json({
-        message:"welcome! This is JavaScript course",
-        metadata: strCompress.repeat(100000)
-    })
-})
+app.use('/', require('./routers/index'));
 // handling error
 
 module.exports = app;
