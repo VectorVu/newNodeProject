@@ -4,8 +4,9 @@ const KeyTokenService = require('../services/keyToken.service');
 const bcrypt = require('bcrypt');
 const crypto = require('crypto');
 const { createTokenPair } = require('../auth/authUtils');
-const { getInforData } = require('../utils');
-const { BadRequestError, ConflictRequestError } = require('../core/error.response');
+const { getInforData, createToken } = require('../utils');
+const { BadRequestError, AuthFailureError } = require('../core/error.response');
+const { findByEmail } = require('./shop.service');
 const roleShop = {
     SHOP: '001',
     WRITER: '002',
@@ -13,6 +14,40 @@ const roleShop = {
     ADMIN: '004'
 }
 class AccessService {
+
+    static login = async ({ email, password, refreshToken = null }) => {
+        //1 check email
+        const foundShop = await findByEmail({ email });
+        if (!foundShop) {
+            throw new BadRequestError('Shop not registered!');
+        }
+        //2 match password
+        const match = bcrypt.compareSync(password, foundShop.password);
+        if (!match) {
+            throw new AuthFailureError('Authentication Error');
+        }
+        //3 create token
+        const privateKey = createToken();
+        const publicKey = createToken();
+        const {_id: shopId} = foundShop;
+        //4 generate tokens
+        const tokens = await createTokenPair({ shopId, email }, publicKey, privateKey);
+        //
+        await KeyTokenService.createKeyToken({
+            refreshToken: tokens.refreshToken,
+            privateKey,
+            publicKey,
+            shopId
+        });
+
+        return {
+            metaData: {
+                shop: getInforData({ fields: ['_id', 'name', 'email'], object: foundShop }),
+                tokens
+            }
+        }
+    }
+
     static signUp = async ({ email, password, name }) => {
         //check email
         const holderShop = await shopModel.findOne({ email: email }).lean();
@@ -39,16 +74,15 @@ class AccessService {
             //         format: "pem"
             //     }
             // })
-            const privateKey = crypto.randomBytes(64).toString('hex');
-            const publicKey = crypto.randomBytes(64).toString('hex');
+            const privateKey = createToken();
+            const publicKey = createToken();
 
-            console.log({ privateKey, publicKey });// save collection keyStore
+            // console.log({ privateKey, publicKey });// save collection keyStore
             const keyStore = await KeyTokenService.createKeyToken({
                 shopId: newShop._id,
                 publicKey,
                 privateKey
             });
-
             if (!keyStore) {
                 throw new BadRequestError('Error: publicKeyString error!');
             }
