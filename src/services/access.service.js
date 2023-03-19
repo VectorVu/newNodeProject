@@ -15,6 +15,12 @@ const roleShop = {
 }
 class AccessService {
 
+    static logout = async ( keyStore ) => {
+        const delKey = await KeyTokenService.removeKeyById(keyStore._id);
+        console.log(delKey);
+        return delKey;
+    }
+
     static login = async ({ email, password, refreshToken = null }) => {
         //1 check email
         const foundShop = await findByEmail({ email });
@@ -29,7 +35,7 @@ class AccessService {
         //3 create token
         const privateKey = createToken();
         const publicKey = createToken();
-        const {_id: shopId} = foundShop;
+        const { _id: shopId } = foundShop;
         //4 generate tokens
         const tokens = await createTokenPair({ shopId, email }, publicKey, privateKey);
         //
