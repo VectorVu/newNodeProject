@@ -28,11 +28,23 @@ class KeyTokenService {
     }
 
     static finByShopId = async (shopId) => {
-        return await keytokenModel.findOne({ shop: Types.ObjectId(shopId) }).lean();
+        return await keytokenModel.findOne({ shop: Types.ObjectId(shopId) });
     }
 
     static removeKeyById = async (id) => {
         return await keytokenModel.remove(id);
+    }
+
+    static findByRefreshTokenUsed = async (refreshToken) => {
+        return await keytokenModel.findOne({ refreshTokensUsed: refreshToken }).lean();
+    }
+
+    static findByRefreshToken = async (refreshToken) => {
+        return await keytokenModel.findOne({ refreshToken: refreshToken });
+    }
+
+    static deleteKey = async (shopId) => {
+        return await keytokenModel.findOneAndDelete({ shop: shopId });
     }
 }
 module.exports = KeyTokenService;
