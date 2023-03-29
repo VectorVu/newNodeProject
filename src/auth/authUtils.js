@@ -123,6 +123,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
             throw new AuthFailureError('Invalid shopId');
         }
         req.keyStore = keyStore;
+        req.shop = decodeShop;
         return next();
     } catch (error) {
         throw error;
