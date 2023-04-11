@@ -2,19 +2,74 @@
 
 const { product, clothing, electronic, furniture } = require('../models/product.model');
 const { BadRequestError } = require('../core/error.response');
+const {
+    findAllDraftsForShop,
+    publishProductByShop,
+    findAllPublishForShop,
+    unPublishProductByShop,
+    searchProductByUser,
+    findAllProducts,
+    findProduct
+} = require('../models/repositories/product.repo');
 // define factory class to create product
 class ProductFactory {
     static productRegistry = {};
-    
-    static registerProductType (type, classRef) {
-        ProductFactory.productRegistry[type] = classRef; 
+
+    static registerProductType(type, classRef) {
+        ProductFactory.productRegistry[type] = classRef;
     }
 
     static async createProduct(type, payload) {
         const productClass = ProductFactory.productRegistry[type];
-        if(!productClass) throw new BadRequestError(`Invalid Product Types ${type}`);
+        if (!productClass) throw new BadRequestError(`Invalid Product Types ${type}`);
         return new productClass(payload).createProduct();
     }
+
+    static async updateProduct(type, payload) {
+        const productClass = ProductFactory.productRegistry[type];
+        if (!productClass) throw new BadRequestError(`Invalid Product Types ${type}`);
+        return new productClass(payload).createProduct();
+    }
+
+    // query
+
+    static async findAllDraftsForShop({ product_shop, limit = 50, skip = 0 }) {
+        const query = { product_shop, isDraft: true };
+        return await findAllDraftsForShop({ query, limit, skip });
+    }
+
+    static async findAllPublishForShop({ product_shop, limit = 50, skip = 0 }) {
+        const query = { product_shop, isPublished: true };
+        return await findAllPublishForShop({ query, limit, skip });
+    }
+
+    static async searchProducts({ keySearch }) {
+        return await searchProductByUser({ keySearch });
+    }
+
+    static async findAllProducts({ limit = 50, sort = 'ctime', page = 1, filter = { isPublished: true },
+        select = ['product_name', 'product_price', 'product_thumb'] }) {
+        return await findAllProducts({
+            limit, sort, page, filter,
+            select
+        });
+    }
+
+    static async findProduct({ product_id, unSelect = ['__v'] }) {
+        return await findProduct({ product_id, unSelect });
+    }
+    // end query
+
+
+    // put 
+    static async publishProductByShop({ product_shop, product_id }) {
+        return await publishProductByShop({ product_shop, product_id });
+    }
+
+    static async unPublishProductByShop({ product_shop, product_id }) {
+        return await unPublishProductByShop({ product_shop, product_id });
+    }
+    // end put
 }
 
 // define base product class

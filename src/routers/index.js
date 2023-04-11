@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(apiKey);
 // check permission 
 router.use(permission('0000'));
+router.use('/v1/api/product', require('./product'));
 
 router.use('/v1/api', require('./access'));
 // router.get("", (req, res, next)=>{
@@ -15,6 +16,5 @@ router.use('/v1/api', require('./access'));
 //         message:"welcome! This is JavaScript course",
 //     })
 // })
-router.use('/v1/api/product', require('./product'));
 
 module.exports = router;
